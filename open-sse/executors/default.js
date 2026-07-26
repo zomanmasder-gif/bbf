@@ -99,7 +99,12 @@ export class DefaultExecutor extends BaseExecutor {
       // pattern in iflow.js/qwen.js. Providers that reject this field are
       // handled via stripUnsupportedParams rules (e.g. Codex's own executor
       // deletes it explicitly, so they aren't affected here).
-      if (stream && transformed.messages && !transformed.stream_options) {
+      // Skip stream_options for Anthropic API (they don't support it and return 400)
+      const isAnthropicAPI = this.config.baseUrl?.includes('anthropic.com') || 
+                             this.config.format === 'anthropic' ||
+                             this.provider === 'anthropic' ||
+                             model?.includes('claude');
+      if (stream && transformed.messages && !transformed.stream_options && !isAnthropicAPI) {
         transformed.stream_options = { include_usage: true };
       }
     }
